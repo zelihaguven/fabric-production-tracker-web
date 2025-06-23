@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { 
   Home, 
   Package, 
@@ -13,18 +14,33 @@ import {
 } from 'lucide-react';
 
 const Sidebar = () => {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('dashboard');
 
+  useEffect(() => {
+    // URL'e göre aktif tab'i belirle
+    const path = location.pathname;
+    if (path === '/') setActiveTab('dashboard');
+    else if (path === '/products') setActiveTab('products');
+    else if (path === '/orders') setActiveTab('orders');
+    else if (path === '/production') setActiveTab('production');
+    else if (path === '/inventory') setActiveTab('inventory');
+    else if (path === '/labels') setActiveTab('labels');
+    else if (path === '/reports') setActiveTab('reports');
+    else if (path === '/analytics') setActiveTab('analytics');
+    else if (path === '/settings') setActiveTab('settings');
+  }, [location.pathname]);
+
   const menuItems = [
-    { id: 'dashboard', label: 'Ana Panel', icon: Home },
-    { id: 'products', label: 'Ürün & Model', icon: Shirt },
-    { id: 'orders', label: 'Sipariş Yönetimi', icon: ShoppingCart },
-    { id: 'production', label: 'Üretim Takibi', icon: Scissors },
-    { id: 'inventory', label: 'Stok Yönetimi', icon: Package },
-    { id: 'labels', label: 'Etiket Takibi', icon: Tag },
-    { id: 'reports', label: 'Raporlar', icon: BarChart3 },
-    { id: 'analytics', label: 'Analiz', icon: TrendingUp },
-    { id: 'settings', label: 'Ayarlar', icon: Settings }
+    { id: 'dashboard', label: 'Ana Panel', icon: Home, path: '/' },
+    { id: 'products', label: 'Ürün & Model', icon: Shirt, path: '/products' },
+    { id: 'orders', label: 'Sipariş Yönetimi', icon: ShoppingCart, path: '/orders' },
+    { id: 'production', label: 'Üretim Takibi', icon: Scissors, path: '/production' },
+    { id: 'inventory', label: 'Stok Yönetimi', icon: Package, path: '/inventory' },
+    { id: 'labels', label: 'Etiket Takibi', icon: Tag, path: '/labels' },
+    { id: 'reports', label: 'Raporlar', icon: BarChart3, path: '/reports' },
+    { id: 'analytics', label: 'Analiz', icon: TrendingUp, path: '/analytics' },
+    { id: 'settings', label: 'Ayarlar', icon: Settings, path: '/settings' }
   ];
 
   return (
@@ -45,9 +61,9 @@ const Sidebar = () => {
         {menuItems.map((item) => {
           const Icon = item.icon;
           return (
-            <button
+            <Link
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              to={item.path}
               className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg mb-1 transition-all duration-200 ${
                 activeTab === item.id
                   ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-md'
@@ -56,7 +72,7 @@ const Sidebar = () => {
             >
               <Icon className="w-5 h-5" />
               <span className="font-medium">{item.label}</span>
-            </button>
+            </Link>
           );
         })}
       </nav>
