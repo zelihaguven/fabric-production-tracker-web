@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   Home, 
   Package, 
@@ -10,11 +11,15 @@ import {
   Shirt,
   Scissors,
   Tag,
-  TrendingUp
+  TrendingUp,
+  LogOut,
+  User
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const Sidebar = () => {
   const location = useLocation();
+  const { user, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
 
   useEffect(() => {
@@ -43,6 +48,14 @@ const Sidebar = () => {
     { id: 'settings', label: 'Ayarlar', icon: Settings, path: '/settings' }
   ];
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+  };
+
   return (
     <div className="fixed left-0 top-0 h-full w-64 bg-white shadow-xl border-r border-gray-200 z-50">
       <div className="p-6 border-b border-gray-200">
@@ -53,6 +66,21 @@ const Sidebar = () => {
           <div>
             <h2 className="text-xl font-bold text-gray-900">StokPro</h2>
             <p className="text-sm text-gray-500">Stok Takip Sistemi</p>
+          </div>
+        </div>
+      </div>
+      
+      {/* Kullanıcı Bilgisi */}
+      <div className="p-4 border-b border-gray-200 bg-gray-50">
+        <div className="flex items-center space-x-3">
+          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+            <User className="w-4 h-4 text-blue-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-gray-900 truncate">
+              {user?.email}
+            </p>
+            <p className="text-xs text-gray-500">Aktif kullanıcı</p>
           </div>
         </div>
       </div>
@@ -77,7 +105,18 @@ const Sidebar = () => {
         })}
       </nav>
       
-      <div className="absolute bottom-6 left-3 right-3">
+      <div className="absolute bottom-6 left-3 right-3 space-y-3">
+        {/* Çıkış Butonu */}
+        <Button
+          onClick={handleSignOut}
+          variant="outline"
+          className="w-full justify-start text-gray-600 hover:text-red-600 hover:border-red-200"
+        >
+          <LogOut className="w-4 h-4 mr-2" />
+          Çıkış Yap
+        </Button>
+        
+        {/* Sistem Durumu */}
         <div className="bg-gradient-to-r from-green-400 to-emerald-500 rounded-lg p-4 text-white">
           <h3 className="font-semibold mb-1">Sistem Durumu</h3>
           <p className="text-sm opacity-90">Tüm modüller aktif</p>
