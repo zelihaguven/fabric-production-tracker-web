@@ -15,10 +15,10 @@ const Index = () => {
           <div className="max-w-7xl mx-auto">
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Tekstil Üretim Takip Sistemi
+                StokPro - Stok Takip Sistemi
               </h1>
               <p className="text-gray-600">
-                Üretim süreçlerinizi takip edin ve stok yönetiminizi optimize edin
+                Stok yönetiminizi takip edin ve üretim süreçlerinizi optimize edin
               </p>
             </div>
             

@@ -35,8 +35,8 @@ const Sidebar = () => {
             <Shirt className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">TÜTS</h2>
-            <p className="text-sm text-gray-500">Tekstil Sistemi</p>
+            <h2 className="text-xl font-bold text-gray-900">StokPro</h2>
+            <p className="text-sm text-gray-500">Stok Takip Sistemi</p>
           </div>
         </div>
       </div>
