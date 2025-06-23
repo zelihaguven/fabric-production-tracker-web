@@ -36,6 +36,50 @@ export type Database = {
         }
         Relationships: []
       }
+      labels: {
+        Row: {
+          brand: string | null
+          count_quantity: number | null
+          created_at: string
+          id: string
+          order_status: string | null
+          product_id: string
+          received_quantity: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brand?: string | null
+          count_quantity?: number | null
+          created_at?: string
+          id?: string
+          order_status?: string | null
+          product_id: string
+          received_quantity?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brand?: string | null
+          count_quantity?: number | null
+          created_at?: string
+          id?: string
+          order_status?: string | null
+          product_id?: string
+          received_quantity?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "labels_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -179,6 +223,7 @@ export type Database = {
       products: {
         Row: {
           category_id: string | null
+          color: string | null
           cost: number | null
           created_at: string
           description: string | null
@@ -187,6 +232,8 @@ export type Database = {
           model: string | null
           name: string
           price: number | null
+          size_count: number | null
+          sizes: string[] | null
           sku: string | null
           stock_quantity: number | null
           updated_at: string
@@ -194,6 +241,7 @@ export type Database = {
         }
         Insert: {
           category_id?: string | null
+          color?: string | null
           cost?: number | null
           created_at?: string
           description?: string | null
@@ -202,6 +250,8 @@ export type Database = {
           model?: string | null
           name: string
           price?: number | null
+          size_count?: number | null
+          sizes?: string[] | null
           sku?: string | null
           stock_quantity?: number | null
           updated_at?: string
@@ -209,6 +259,7 @@ export type Database = {
         }
         Update: {
           category_id?: string | null
+          color?: string | null
           cost?: number | null
           created_at?: string
           description?: string | null
@@ -217,6 +268,8 @@ export type Database = {
           model?: string | null
           name?: string
           price?: number | null
+          size_count?: number | null
+          sizes?: string[] | null
           sku?: string | null
           stock_quantity?: number | null
           updated_at?: string

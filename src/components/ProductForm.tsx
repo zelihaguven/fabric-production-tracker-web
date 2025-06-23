@@ -23,6 +23,9 @@ interface Product {
   stock_quantity: number | null;
   min_stock_level: number | null;
   category_id: string | null;
+  color: string | null;
+  size_count: number | null;
+  sizes: string[] | null;
 }
 
 interface Category {
@@ -47,6 +50,9 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
     stock_quantity: '',
     min_stock_level: '',
     category_id: '',
+    color: '',
+    size_count: '',
+    sizes: '',
   });
 
   useEffect(() => {
@@ -58,6 +64,9 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
         stock_quantity: product.stock_quantity?.toString() || '',
         min_stock_level: product.min_stock_level?.toString() || '',
         category_id: product.category_id || '',
+        color: product.color || '',
+        size_count: product.size_count?.toString() || '',
+        sizes: product.sizes?.join(', ') || '',
       });
     }
   }, [product]);
@@ -83,6 +92,10 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
 
     setLoading(true);
     try {
+      const sizesArray = formData.sizes
+        ? formData.sizes.split(',').map(s => s.trim()).filter(s => s.length > 0)
+        : null;
+
       const productData = {
         user_id: user.id,
         name: formData.name,
@@ -90,6 +103,9 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
         stock_quantity: formData.stock_quantity ? parseInt(formData.stock_quantity) : null,
         min_stock_level: formData.min_stock_level ? parseInt(formData.min_stock_level) : null,
         category_id: formData.category_id || null,
+        color: formData.color || null,
+        size_count: formData.size_count ? parseInt(formData.size_count) : null,
+        sizes: sizesArray,
       };
 
       if (product) {
@@ -182,6 +198,36 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="color">Renk</Label>
+                <Input
+                  id="color"
+                  value={formData.color}
+                  onChange={(e) => handleChange('color', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="size_count">Beden Sayısı</Label>
+                <Input
+                  id="size_count"
+                  type="number"
+                  value={formData.size_count}
+                  onChange={(e) => handleChange('size_count', e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="sizes">Bedenler (virgülle ayırın)</Label>
+              <Input
+                id="sizes"
+                value={formData.sizes}
+                onChange={(e) => handleChange('sizes', e.target.value)}
+                placeholder="S, M, L, XL"
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
