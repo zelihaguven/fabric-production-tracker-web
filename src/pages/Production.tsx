@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
@@ -21,10 +22,12 @@ interface ProductionRecord {
   id: string;
   product_id: string;
   quantity_produced: number;
+  defective_quantity: number | null;
   production_date: string;
   notes: string | null;
   products: {
     name: string;
+    model: string | null;
   };
 }
 
@@ -51,10 +54,12 @@ const Production = () => {
           id,
           product_id,
           quantity_produced,
+          defective_quantity,
           production_date,
           notes,
           products (
-            name
+            name,
+            model
           )
         `)
         .eq('user_id', user?.id)
@@ -107,8 +112,13 @@ const Production = () => {
   };
 
   const filteredProductions = productions.filter(production =>
-    production.products?.name.toLowerCase().includes(searchTerm.toLowerCase())
+    production.products?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    production.products?.model?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const getProductDisplayName = (product: { name: string; model: string | null }) => {
+    return product.model ? `${product.name} - ${product.model}` : product.name;
+  };
 
   if (loading) {
     return (
@@ -168,6 +178,7 @@ const Production = () => {
                       <TableRow>
                         <TableHead>Ürün</TableHead>
                         <TableHead>Üretilen Miktar</TableHead>
+                        <TableHead>Hatalı Miktar</TableHead>
                         <TableHead>Üretim Tarihi</TableHead>
                         <TableHead>Notlar</TableHead>
                         <TableHead>İşlemler</TableHead>
@@ -177,9 +188,10 @@ const Production = () => {
                       {filteredProductions.map((production) => (
                         <TableRow key={production.id}>
                           <TableCell className="font-medium">
-                            {production.products?.name || 'Ürün bulunamadı'}
+                            {production.products ? getProductDisplayName(production.products) : 'Ürün bulunamadı'}
                           </TableCell>
                           <TableCell>{production.quantity_produced}</TableCell>
+                          <TableCell>{production.defective_quantity || 0}</TableCell>
                           <TableCell>
                             {new Date(production.production_date).toLocaleDateString('tr-TR')}
                           </TableCell>

@@ -26,7 +26,7 @@ interface Order {
   customer_email: string | null;
   customer_phone: string | null;
   status: string | null;
-  total_amount: number | null;
+  total_delivery_quantity: number | null;
   order_date: string;
   delivery_date: string | null;
   notes: string | null;
@@ -183,7 +183,7 @@ const Orders = () => {
                         <TableHead>Sipariş No</TableHead>
                         <TableHead>Müşteri</TableHead>
                         <TableHead>Telefon</TableHead>
-                        <TableHead>Tutar</TableHead>
+                        <TableHead>Teslim Adedi</TableHead>
                         <TableHead>Tarih</TableHead>
                         <TableHead>Durum</TableHead>
                         <TableHead>İşlemler</TableHead>
@@ -196,7 +196,7 @@ const Orders = () => {
                           <TableCell>{order.customer_name}</TableCell>
                           <TableCell>{order.customer_phone || '-'}</TableCell>
                           <TableCell>
-                            {order.total_amount ? `₺${order.total_amount}` : '-'}
+                            {order.total_delivery_quantity || '-'}
                           </TableCell>
                           <TableCell>
                             {new Date(order.order_date).toLocaleDateString('tr-TR')}

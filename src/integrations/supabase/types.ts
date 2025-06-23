@@ -97,6 +97,7 @@ export type Database = {
           order_number: string
           status: string | null
           total_amount: number | null
+          total_delivery_quantity: number | null
           updated_at: string
           user_id: string
         }
@@ -112,6 +113,7 @@ export type Database = {
           order_number: string
           status?: string | null
           total_amount?: number | null
+          total_delivery_quantity?: number | null
           updated_at?: string
           user_id: string
         }
@@ -127,6 +129,7 @@ export type Database = {
           order_number?: string
           status?: string | null
           total_amount?: number | null
+          total_delivery_quantity?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -135,6 +138,7 @@ export type Database = {
       production_records: {
         Row: {
           created_at: string
+          defective_quantity: number | null
           id: string
           notes: string | null
           product_id: string
@@ -144,6 +148,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          defective_quantity?: number | null
           id?: string
           notes?: string | null
           product_id: string
@@ -153,6 +158,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          defective_quantity?: number | null
           id?: string
           notes?: string | null
           product_id?: string
@@ -178,6 +184,7 @@ export type Database = {
           description: string | null
           id: string
           min_stock_level: number | null
+          model: string | null
           name: string
           price: number | null
           sku: string | null
@@ -192,6 +199,7 @@ export type Database = {
           description?: string | null
           id?: string
           min_stock_level?: number | null
+          model?: string | null
           name: string
           price?: number | null
           sku?: string | null
@@ -206,6 +214,7 @@ export type Database = {
           description?: string | null
           id?: string
           min_stock_level?: number | null
+          model?: string | null
           name?: string
           price?: number | null
           sku?: string | null

@@ -20,17 +20,20 @@ import { useToast } from '@/hooks/use-toast';
 interface ProductionRecord {
   id: string;
   quantity_produced: number;
+  defective_quantity: number | null;
   production_date: string;
   notes: string | null;
   product_id: string;
   products?: {
     name: string;
+    model: string | null;
   };
 }
 
 interface Product {
   id: string;
   name: string;
+  model: string | null;
 }
 
 interface ProductionFormProps {
@@ -47,6 +50,7 @@ const ProductionForm = ({ production, onSuccess, onCancel }: ProductionFormProps
   const [formData, setFormData] = useState({
     product_id: '',
     quantity_produced: '',
+    defective_quantity: '',
     production_date: new Date().toISOString().split('T')[0],
     notes: '',
   });
@@ -57,6 +61,7 @@ const ProductionForm = ({ production, onSuccess, onCancel }: ProductionFormProps
       setFormData({
         product_id: production.product_id || '',
         quantity_produced: production.quantity_produced?.toString() || '',
+        defective_quantity: production.defective_quantity?.toString() || '',
         production_date: production.production_date ? production.production_date.split('T')[0] : '',
         notes: production.notes || '',
       });
@@ -67,7 +72,7 @@ const ProductionForm = ({ production, onSuccess, onCancel }: ProductionFormProps
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('id, name')
+        .select('id, name, model')
         .eq('user_id', user?.id)
         .order('name');
 
@@ -88,6 +93,7 @@ const ProductionForm = ({ production, onSuccess, onCancel }: ProductionFormProps
         user_id: user.id,
         product_id: formData.product_id,
         quantity_produced: parseInt(formData.quantity_produced),
+        defective_quantity: formData.defective_quantity ? parseInt(formData.defective_quantity) : null,
         production_date: formData.production_date,
         notes: formData.notes || null,
       };
@@ -135,6 +141,10 @@ const ProductionForm = ({ production, onSuccess, onCancel }: ProductionFormProps
     }));
   };
 
+  const getProductDisplayName = (product: Product) => {
+    return product.model ? `${product.name} - ${product.model}` : product.name;
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -157,14 +167,14 @@ const ProductionForm = ({ production, onSuccess, onCancel }: ProductionFormProps
                 <SelectContent>
                   {products.map((product) => (
                     <SelectItem key={product.id} value={product.id}>
-                      {product.name}
+                      {getProductDisplayName(product)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="quantity_produced">Üretilen Miktar *</Label>
                 <Input
@@ -173,6 +183,15 @@ const ProductionForm = ({ production, onSuccess, onCancel }: ProductionFormProps
                   value={formData.quantity_produced}
                   onChange={(e) => handleChange('quantity_produced', e.target.value)}
                   required
+                />
+              </div>
+              <div>
+                <Label htmlFor="defective_quantity">Hatalı Miktar</Label>
+                <Input
+                  id="defective_quantity"
+                  type="number"
+                  value={formData.defective_quantity}
+                  onChange={(e) => handleChange('defective_quantity', e.target.value)}
                 />
               </div>
               <div>

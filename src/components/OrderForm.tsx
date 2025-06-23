@@ -24,7 +24,7 @@ interface Order {
   customer_email: string | null;
   customer_phone: string | null;
   status: string | null;
-  total_amount: number | null;
+  total_delivery_quantity: number | null;
   order_date: string;
   delivery_date: string | null;
   notes: string | null;
@@ -46,7 +46,7 @@ const OrderForm = ({ order, onSuccess, onCancel }: OrderFormProps) => {
     customer_email: '',
     customer_phone: '',
     status: 'pending',
-    total_amount: '',
+    total_delivery_quantity: '',
     order_date: new Date().toISOString().split('T')[0],
     delivery_date: '',
     notes: '',
@@ -60,7 +60,7 @@ const OrderForm = ({ order, onSuccess, onCancel }: OrderFormProps) => {
         customer_email: order.customer_email || '',
         customer_phone: order.customer_phone || '',
         status: order.status || 'pending',
-        total_amount: order.total_amount?.toString() || '',
+        total_delivery_quantity: order.total_delivery_quantity?.toString() || '',
         order_date: order.order_date ? order.order_date.split('T')[0] : '',
         delivery_date: order.delivery_date ? order.delivery_date.split('T')[0] : '',
         notes: order.notes || '',
@@ -85,7 +85,7 @@ const OrderForm = ({ order, onSuccess, onCancel }: OrderFormProps) => {
         customer_email: formData.customer_email || null,
         customer_phone: formData.customer_phone || null,
         status: formData.status,
-        total_amount: formData.total_amount ? parseFloat(formData.total_amount) : null,
+        total_delivery_quantity: formData.total_delivery_quantity ? parseInt(formData.total_delivery_quantity) : null,
         order_date: formData.order_date,
         delivery_date: formData.delivery_date || null,
         notes: formData.notes || null,
@@ -226,13 +226,12 @@ const OrderForm = ({ order, onSuccess, onCancel }: OrderFormProps) => {
             </div>
 
             <div>
-              <Label htmlFor="total_amount">Toplam Tutar (₺)</Label>
+              <Label htmlFor="total_delivery_quantity">Toplam Teslim Adedi</Label>
               <Input
-                id="total_amount"
+                id="total_delivery_quantity"
                 type="number"
-                step="0.01"
-                value={formData.total_amount}
-                onChange={(e) => handleChange('total_amount', e.target.value)}
+                value={formData.total_delivery_quantity}
+                onChange={(e) => handleChange('total_delivery_quantity', e.target.value)}
               />
             </div>
 

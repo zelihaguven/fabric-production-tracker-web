@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -20,10 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 interface Product {
   id: string;
   name: string;
-  description: string | null;
-  sku: string | null;
-  price: number | null;
-  cost: number | null;
+  model: string | null;
   stock_quantity: number | null;
   min_stock_level: number | null;
   category_id: string | null;
@@ -47,10 +43,7 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
-    sku: '',
-    price: '',
-    cost: '',
+    model: '',
     stock_quantity: '',
     min_stock_level: '',
     category_id: '',
@@ -61,10 +54,7 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
     if (product) {
       setFormData({
         name: product.name || '',
-        description: product.description || '',
-        sku: product.sku || '',
-        price: product.price?.toString() || '',
-        cost: product.cost?.toString() || '',
+        model: product.model || '',
         stock_quantity: product.stock_quantity?.toString() || '',
         min_stock_level: product.min_stock_level?.toString() || '',
         category_id: product.category_id || '',
@@ -96,10 +86,7 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
       const productData = {
         user_id: user.id,
         name: formData.name,
-        description: formData.description || null,
-        sku: formData.sku || null,
-        price: formData.price ? parseFloat(formData.price) : null,
-        cost: formData.cost ? parseFloat(formData.cost) : null,
+        model: formData.model || null,
         stock_quantity: formData.stock_quantity ? parseInt(formData.stock_quantity) : null,
         min_stock_level: formData.min_stock_level ? parseInt(formData.min_stock_level) : null,
         category_id: formData.category_id || null,
@@ -172,28 +159,18 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
                 />
               </div>
               <div>
-                <Label htmlFor="sku">SKU</Label>
+                <Label htmlFor="model">Model</Label>
                 <Input
-                  id="sku"
-                  value={formData.sku}
-                  onChange={(e) => handleChange('sku', e.target.value)}
+                  id="model"
+                  value={formData.model}
+                  onChange={(e) => handleChange('model', e.target.value)}
                 />
               </div>
             </div>
 
             <div>
-              <Label htmlFor="description">Açıklama</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => handleChange('description', e.target.value)}
-                rows={3}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="category">Kategori</Label>
-              <Select value={formData.category_id} onValueChange={(value) => handleChange('category_id', value)}>
+              <Label htmlFor="category">Kategori *</Label>
+              <Select value={formData.category_id} onValueChange={(value) => handleChange('category_id', value)} required>
                 <SelectTrigger>
                   <SelectValue placeholder="Kategori seçin" />
                 </SelectTrigger>
@@ -209,39 +186,17 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="price">Satış Fiyatı (₺)</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  step="0.01"
-                  value={formData.price}
-                  onChange={(e) => handleChange('price', e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="cost">Maliyet (₺)</Label>
-                <Input
-                  id="cost"
-                  type="number"
-                  step="0.01"
-                  value={formData.cost}
-                  onChange={(e) => handleChange('cost', e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="stock_quantity">Stok Miktarı</Label>
+                <Label htmlFor="stock_quantity">Sipariş Adedi *</Label>
                 <Input
                   id="stock_quantity"
                   type="number"
                   value={formData.stock_quantity}
                   onChange={(e) => handleChange('stock_quantity', e.target.value)}
+                  required
                 />
               </div>
               <div>
-                <Label htmlFor="min_stock_level">Minimum Stok Seviyesi</Label>
+                <Label htmlFor="min_stock_level">Üretim Adedi</Label>
                 <Input
                   id="min_stock_level"
                   type="number"

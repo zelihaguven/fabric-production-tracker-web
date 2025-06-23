@@ -22,10 +22,7 @@ import {
 interface Product {
   id: string;
   name: string;
-  description: string | null;
-  sku: string | null;
-  price: number | null;
-  cost: number | null;
+  model: string | null;
   stock_quantity: number | null;
   min_stock_level: number | null;
   category_id: string | null;
@@ -56,10 +53,7 @@ const Products = () => {
         .select(`
           id,
           name,
-          description,
-          sku,
-          price,
-          cost,
+          model,
           stock_quantity,
           min_stock_level,
           category_id,
@@ -118,15 +112,8 @@ const Products = () => {
 
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.sku?.toLowerCase().includes(searchTerm.toLowerCase())
+    product.model?.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const getStockStatus = (current: number | null, min: number | null) => {
-    if (!current || !min) return 'normal';
-    if (current <= min) return 'low';
-    if (current <= min * 1.5) return 'warning';
-    return 'normal';
-  };
 
   if (loading) {
     return (
@@ -185,59 +172,44 @@ const Products = () => {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Ürün Adı</TableHead>
-                        <TableHead>SKU</TableHead>
+                        <TableHead>Model</TableHead>
                         <TableHead>Kategori</TableHead>
-                        <TableHead>Fiyat</TableHead>
-                        <TableHead>Stok</TableHead>
-                        <TableHead>Durum</TableHead>
+                        <TableHead>Sipariş Adedi</TableHead>
+                        <TableHead>Üretim Adedi</TableHead>
                         <TableHead>İşlemler</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredProducts.map((product) => {
-                        const stockStatus = getStockStatus(product.stock_quantity, product.min_stock_level);
-                        return (
-                          <TableRow key={product.id}>
-                            <TableCell className="font-medium">{product.name}</TableCell>
-                            <TableCell>{product.sku || '-'}</TableCell>
-                            <TableCell>{product.categories?.name || '-'}</TableCell>
-                            <TableCell>{product.price ? `₺${product.price}` : '-'}</TableCell>
-                            <TableCell>{product.stock_quantity || 0}</TableCell>
-                            <TableCell>
-                              <Badge
-                                variant={
-                                  stockStatus === 'low' ? 'destructive' :
-                                  stockStatus === 'warning' ? 'default' : 'secondary'
-                                }
+                      {filteredProducts.map((product) => (
+                        <TableRow key={product.id}>
+                          <TableCell className="font-medium">{product.name}</TableCell>
+                          <TableCell>{product.model || '-'}</TableCell>
+                          <TableCell>{product.categories?.name || '-'}</TableCell>
+                          <TableCell>{product.stock_quantity || 0}</TableCell>
+                          <TableCell>{product.min_stock_level || 0}</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setEditingProduct(product);
+                                  setShowForm(true);
+                                }}
                               >
-                                {stockStatus === 'low' ? 'Düşük Stok' :
-                                 stockStatus === 'warning' ? 'Uyarı' : 'Normal'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex space-x-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    setEditingProduct(product);
-                                    setShowForm(true);
-                                  }}
-                                >
-                                  <Edit className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleDelete(product.id)}
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDelete(product.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                     </TableBody>
                   </Table>
                 )}
