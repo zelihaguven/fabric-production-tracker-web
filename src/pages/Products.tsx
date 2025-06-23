@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
@@ -24,13 +25,11 @@ interface Product {
   model: string | null;
   stock_quantity: number | null;
   min_stock_level: number | null;
-  category_id: string | null;
   color: string | null;
-  size_count: number | null;
-  sizes: string[] | null;
-  categories?: {
-    name: string;
-  };
+  order_number: string | null;
+  ordering_brand: string | null;
+  fabric_number: string | null;
+  fabric_status: string | null;
 }
 
 const Products = () => {
@@ -58,13 +57,11 @@ const Products = () => {
           model,
           stock_quantity,
           min_stock_level,
-          category_id,
           color,
-          size_count,
-          sizes,
-          categories (
-            name
-          )
+          order_number,
+          ordering_brand,
+          fabric_number,
+          fabric_status
         `)
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
@@ -115,9 +112,27 @@ const Products = () => {
     fetchProducts();
   };
 
+  const getStatusBadge = (status: string | null) => {
+    if (!status) return <Badge variant="secondary">-</Badge>;
+    
+    switch (status) {
+      case 'kumaş sipariş edildi':
+        return <Badge className="bg-yellow-100 text-yellow-800">Kumaş Sipariş Edildi</Badge>;
+      case 'kumaş geldi':
+        return <Badge className="bg-blue-100 text-blue-800">Kumaş Geldi</Badge>;
+      case 'kumaş kesime girdi':
+        return <Badge className="bg-orange-100 text-orange-800">Kumaş Kesime Girdi</Badge>;
+      case 'kumaş hazır':
+        return <Badge className="bg-green-100 text-green-800">Kumaş Hazır</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
+    }
+  };
+
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.model?.toLowerCase().includes(searchTerm.toLowerCase())
+    product.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.ordering_brand?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -178,9 +193,11 @@ const Products = () => {
                       <TableRow>
                         <TableHead>Ürün Adı</TableHead>
                         <TableHead>Model</TableHead>
-                        <TableHead>Kategori</TableHead>
                         <TableHead>Renk</TableHead>
-                        <TableHead>Beden Sayısı</TableHead>
+                        <TableHead>Sipariş No</TableHead>
+                        <TableHead>Sipariş Veren Marka</TableHead>
+                        <TableHead>Kumaş No</TableHead>
+                        <TableHead>Kumaş Durumu</TableHead>
                         <TableHead>Sipariş Adedi</TableHead>
                         <TableHead>Üretim Adedi</TableHead>
                         <TableHead>İşlemler</TableHead>
@@ -191,9 +208,11 @@ const Products = () => {
                         <TableRow key={product.id}>
                           <TableCell className="font-medium">{product.name}</TableCell>
                           <TableCell>{product.model || '-'}</TableCell>
-                          <TableCell>{product.categories?.name || '-'}</TableCell>
                           <TableCell>{product.color || '-'}</TableCell>
-                          <TableCell>{product.size_count || '-'}</TableCell>
+                          <TableCell>{product.order_number || '-'}</TableCell>
+                          <TableCell>{product.ordering_brand || '-'}</TableCell>
+                          <TableCell>{product.fabric_number || '-'}</TableCell>
+                          <TableCell>{getStatusBadge(product.fabric_status)}</TableCell>
                           <TableCell>{product.stock_quantity || 0}</TableCell>
                           <TableCell>{product.min_stock_level || 0}</TableCell>
                           <TableCell>

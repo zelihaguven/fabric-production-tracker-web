@@ -22,15 +22,11 @@ interface Product {
   model: string | null;
   stock_quantity: number | null;
   min_stock_level: number | null;
-  category_id: string | null;
   color: string | null;
-  size_count: number | null;
-  sizes: string[] | null;
-}
-
-interface Category {
-  id: string;
-  name: string;
+  order_number: string | null;
+  ordering_brand: string | null;
+  fabric_number: string | null;
+  fabric_status: string | null;
 }
 
 interface ProductFormProps {
@@ -42,49 +38,34 @@ interface ProductFormProps {
 const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     model: '',
     stock_quantity: '',
     min_stock_level: '',
-    category_id: '',
     color: '',
-    size_count: '',
-    sizes: '',
+    order_number: '',
+    ordering_brand: '',
+    fabric_number: '',
+    fabric_status: 'kumaş sipariş edildi',
   });
 
   useEffect(() => {
-    fetchCategories();
     if (product) {
       setFormData({
         name: product.name || '',
         model: product.model || '',
         stock_quantity: product.stock_quantity?.toString() || '',
         min_stock_level: product.min_stock_level?.toString() || '',
-        category_id: product.category_id || '',
         color: product.color || '',
-        size_count: product.size_count?.toString() || '',
-        sizes: product.sizes?.join(', ') || '',
+        order_number: product.order_number || '',
+        ordering_brand: product.ordering_brand || '',
+        fabric_number: product.fabric_number || '',
+        fabric_status: product.fabric_status || 'kumaş sipariş edildi',
       });
     }
   }, [product]);
-
-  const fetchCategories = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('id, name')
-        .eq('user_id', user?.id)
-        .order('name');
-
-      if (error) throw error;
-      setCategories(data || []);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,20 +73,17 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
 
     setLoading(true);
     try {
-      const sizesArray = formData.sizes
-        ? formData.sizes.split(',').map(s => s.trim()).filter(s => s.length > 0)
-        : null;
-
       const productData = {
         user_id: user.id,
         name: formData.name,
         model: formData.model || null,
         stock_quantity: formData.stock_quantity ? parseInt(formData.stock_quantity) : null,
         min_stock_level: formData.min_stock_level ? parseInt(formData.min_stock_level) : null,
-        category_id: formData.category_id || null,
         color: formData.color || null,
-        size_count: formData.size_count ? parseInt(formData.size_count) : null,
-        sizes: sizesArray,
+        order_number: formData.order_number || null,
+        ordering_brand: formData.ordering_brand || null,
+        fabric_number: formData.fabric_number || null,
+        fabric_status: formData.fabric_status || null,
       };
 
       if (product) {
@@ -184,22 +162,6 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="category">Kategori *</Label>
-              <Select value={formData.category_id} onValueChange={(value) => handleChange('category_id', value)} required>
-                <SelectTrigger>
-                  <SelectValue placeholder="Kategori seçin" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="color">Renk</Label>
@@ -210,24 +172,47 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
                 />
               </div>
               <div>
-                <Label htmlFor="size_count">Beden Sayısı</Label>
+                <Label htmlFor="order_number">Sipariş No</Label>
                 <Input
-                  id="size_count"
-                  type="number"
-                  value={formData.size_count}
-                  onChange={(e) => handleChange('size_count', e.target.value)}
+                  id="order_number"
+                  value={formData.order_number}
+                  onChange={(e) => handleChange('order_number', e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="ordering_brand">Sipariş Veren Marka</Label>
+                <Input
+                  id="ordering_brand"
+                  value={formData.ordering_brand}
+                  onChange={(e) => handleChange('ordering_brand', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="fabric_number">Kumaş No</Label>
+                <Input
+                  id="fabric_number"
+                  value={formData.fabric_number}
+                  onChange={(e) => handleChange('fabric_number', e.target.value)}
                 />
               </div>
             </div>
 
             <div>
-              <Label htmlFor="sizes">Bedenler (virgülle ayırın)</Label>
-              <Input
-                id="sizes"
-                value={formData.sizes}
-                onChange={(e) => handleChange('sizes', e.target.value)}
-                placeholder="S, M, L, XL"
-              />
+              <Label htmlFor="fabric_status">Kumaş Durumu</Label>
+              <Select value={formData.fabric_status} onValueChange={(value) => handleChange('fabric_status', value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Kumaş durumu seçin" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="kumaş sipariş edildi">Kumaş Sipariş Edildi</SelectItem>
+                  <SelectItem value="kumaş geldi">Kumaş Geldi</SelectItem>
+                  <SelectItem value="kumaş kesime girdi">Kumaş Kesime Girdi</SelectItem>
+                  <SelectItem value="kumaş hazır">Kumaş Hazır</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

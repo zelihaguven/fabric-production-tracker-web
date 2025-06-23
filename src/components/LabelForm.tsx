@@ -29,6 +29,10 @@ interface LabelData {
   received_quantity: number | null;
   brand: string | null;
   count_quantity: number | null;
+  attached_model: string | null;
+  model_owner: string | null;
+  order_date: string | null;
+  delivery_date: string | null;
 }
 
 interface LabelFormProps {
@@ -48,6 +52,10 @@ const LabelForm = ({ label, onSuccess, onCancel }: LabelFormProps) => {
     received_quantity: '0',
     brand: '',
     count_quantity: '0',
+    attached_model: '',
+    model_owner: '',
+    order_date: '',
+    delivery_date: '',
   });
 
   useEffect(() => {
@@ -59,6 +67,10 @@ const LabelForm = ({ label, onSuccess, onCancel }: LabelFormProps) => {
         received_quantity: label.received_quantity?.toString() || '0',
         brand: label.brand || '',
         count_quantity: label.count_quantity?.toString() || '0',
+        attached_model: label.attached_model || '',
+        model_owner: label.model_owner || '',
+        order_date: label.order_date || '',
+        delivery_date: label.delivery_date || '',
       });
     }
   }, [label]);
@@ -91,6 +103,10 @@ const LabelForm = ({ label, onSuccess, onCancel }: LabelFormProps) => {
         received_quantity: formData.received_quantity ? parseInt(formData.received_quantity) : 0,
         brand: formData.brand || null,
         count_quantity: formData.count_quantity ? parseInt(formData.count_quantity) : 0,
+        attached_model: formData.attached_model || null,
+        model_owner: formData.model_owner || null,
+        order_date: formData.order_date || null,
+        delivery_date: formData.delivery_date || null,
       };
 
       if (label) {
@@ -138,7 +154,7 @@ const LabelForm = ({ label, onSuccess, onCancel }: LabelFormProps) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>
             {label ? 'Etiket Düzenle' : 'Yeni Etiket Ekle'}
@@ -179,11 +195,51 @@ const LabelForm = ({ label, onSuccess, onCancel }: LabelFormProps) => {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="brand">Marka</Label>
+                <Label htmlFor="brand">Etiket Üreticisi</Label>
                 <Input
                   id="brand"
                   value={formData.brand}
                   onChange={(e) => handleChange('brand', e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="attached_model">Takılacak Model</Label>
+                <Input
+                  id="attached_model"
+                  value={formData.attached_model}
+                  onChange={(e) => handleChange('attached_model', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="model_owner">Model Sahibi</Label>
+                <Input
+                  id="model_owner"
+                  value={formData.model_owner}
+                  onChange={(e) => handleChange('model_owner', e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="order_date">Sipariş Tarihi</Label>
+                <Input
+                  id="order_date"
+                  type="date"
+                  value={formData.order_date}
+                  onChange={(e) => handleChange('order_date', e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="delivery_date">Teslim Tarihi</Label>
+                <Input
+                  id="delivery_date"
+                  type="date"
+                  value={formData.delivery_date}
+                  onChange={(e) => handleChange('delivery_date', e.target.value)}
                 />
               </div>
             </div>

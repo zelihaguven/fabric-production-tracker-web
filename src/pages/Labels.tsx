@@ -26,9 +26,13 @@ interface LabelData {
   received_quantity: number | null;
   brand: string | null;
   count_quantity: number | null;
+  attached_model: string | null;
+  model_owner: string | null;
+  order_date: string | null;
+  delivery_date: string | null;
   products?: {
     name: string;
-    model: string | null;
+    model: string |null;
   };
 }
 
@@ -58,6 +62,10 @@ const Labels = () => {
           received_quantity,
           brand,
           count_quantity,
+          attached_model,
+          model_owner,
+          order_date,
+          delivery_date,
           products (
             name,
             model
@@ -119,10 +127,17 @@ const Labels = () => {
     return <Badge className="bg-blue-100 text-blue-800">Sipariş Verildi</Badge>;
   };
 
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('tr-TR');
+  };
+
   const filteredLabels = labels.filter(label =>
     label.products?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     label.products?.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    label.brand?.toLowerCase().includes(searchTerm.toLowerCase())
+    label.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    label.attached_model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    label.model_owner?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (loading) {
@@ -178,52 +193,62 @@ const Labels = () => {
                     <p className="text-gray-500">Henüz etiket eklenmemiş.</p>
                   </div>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Ürün</TableHead>
-                        <TableHead>Marka</TableHead>
-                        <TableHead>Durum</TableHead>
-                        <TableHead>Teslim Alınan</TableHead>
-                        <TableHead>Sayım Miktarı</TableHead>
-                        <TableHead>İşlemler</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredLabels.map((label) => (
-                        <TableRow key={label.id}>
-                          <TableCell className="font-medium">
-                            {label.products?.name} {label.products?.model ? `- ${label.products.model}` : ''}
-                          </TableCell>
-                          <TableCell>{label.brand || '-'}</TableCell>
-                          <TableCell>{getStatusBadge(label.order_status)}</TableCell>
-                          <TableCell>{label.received_quantity || 0}</TableCell>
-                          <TableCell>{label.count_quantity || 0}</TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setEditingLabel(label);
-                                  setShowForm(true);
-                                }}
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleDelete(label.id)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Ürün</TableHead>
+                          <TableHead>Etiket Üreticisi</TableHead>
+                          <TableHead>Durum</TableHead>
+                          <TableHead>Takılacak Model</TableHead>
+                          <TableHead>Model Sahibi</TableHead>
+                          <TableHead>Sipariş Tarihi</TableHead>
+                          <TableHead>Teslim Tarihi</TableHead>
+                          <TableHead>Teslim Alınan</TableHead>
+                          <TableHead>Sayım Miktarı</TableHead>
+                          <TableHead>İşlemler</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredLabels.map((label) => (
+                          <TableRow key={label.id}>
+                            <TableCell className="font-medium">
+                              {label.products?.name} {label.products?.model ? `- ${label.products.model}` : ''}
+                            </TableCell>
+                            <TableCell>{label.brand || '-'}</TableCell>
+                            <TableCell>{getStatusBadge(label.order_status)}</TableCell>
+                            <TableCell>{label.attached_model || '-'}</TableCell>
+                            <TableCell>{label.model_owner || '-'}</TableCell>
+                            <TableCell>{formatDate(label.order_date)}</TableCell>
+                            <TableCell>{formatDate(label.delivery_date)}</TableCell>
+                            <TableCell>{label.received_quantity || 0}</TableCell>
+                            <TableCell>{label.count_quantity || 0}</TableCell>
+                            <TableCell>
+                              <div className="flex space-x-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setEditingLabel(label);
+                                    setShowForm(true);
+                                  }}
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDelete(label.id)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 )}
               </CardContent>
             </Card>

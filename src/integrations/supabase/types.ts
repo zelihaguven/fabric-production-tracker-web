@@ -38,10 +38,14 @@ export type Database = {
       }
       labels: {
         Row: {
+          attached_model: string | null
           brand: string | null
           count_quantity: number | null
           created_at: string
+          delivery_date: string | null
           id: string
+          model_owner: string | null
+          order_date: string | null
           order_status: string | null
           product_id: string
           received_quantity: number | null
@@ -49,10 +53,14 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attached_model?: string | null
           brand?: string | null
           count_quantity?: number | null
           created_at?: string
+          delivery_date?: string | null
           id?: string
+          model_owner?: string | null
+          order_date?: string | null
           order_status?: string | null
           product_id: string
           received_quantity?: number | null
@@ -60,10 +68,14 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attached_model?: string | null
           brand?: string | null
           count_quantity?: number | null
           created_at?: string
+          delivery_date?: string | null
           id?: string
+          model_owner?: string | null
+          order_date?: string | null
           order_status?: string | null
           product_id?: string
           received_quantity?: number | null
@@ -222,68 +234,63 @@ export type Database = {
       }
       products: {
         Row: {
-          category_id: string | null
           color: string | null
           cost: number | null
           created_at: string
           description: string | null
+          fabric_number: string | null
+          fabric_status: string | null
           id: string
           min_stock_level: number | null
           model: string | null
           name: string
+          order_number: string | null
+          ordering_brand: string | null
           price: number | null
-          size_count: number | null
-          sizes: string[] | null
           sku: string | null
           stock_quantity: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
-          category_id?: string | null
           color?: string | null
           cost?: number | null
           created_at?: string
           description?: string | null
+          fabric_number?: string | null
+          fabric_status?: string | null
           id?: string
           min_stock_level?: number | null
           model?: string | null
           name: string
+          order_number?: string | null
+          ordering_brand?: string | null
           price?: number | null
-          size_count?: number | null
-          sizes?: string[] | null
           sku?: string | null
           stock_quantity?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
-          category_id?: string | null
           color?: string | null
           cost?: number | null
           created_at?: string
           description?: string | null
+          fabric_number?: string | null
+          fabric_status?: string | null
           id?: string
           min_stock_level?: number | null
           model?: string | null
           name?: string
+          order_number?: string | null
+          ordering_brand?: string | null
           price?: number | null
-          size_count?: number | null
-          sizes?: string[] | null
           sku?: string | null
           stock_quantity?: number | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "products_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       profiles: {
         Row: {
