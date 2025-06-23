@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
@@ -20,6 +19,7 @@ import {
 
 interface ProductionRecord {
   id: string;
+  product_id: string;
   quantity_produced: number;
   production_date: string;
   notes: string | null;
@@ -49,6 +49,7 @@ const Production = () => {
         .from('production_records')
         .select(`
           id,
+          product_id,
           quantity_produced,
           production_date,
           notes,
