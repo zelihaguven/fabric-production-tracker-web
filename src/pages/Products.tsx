@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2 } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
@@ -26,6 +25,9 @@ interface Product {
   stock_quantity: number | null;
   min_stock_level: number | null;
   category_id: string | null;
+  color: string | null;
+  size_count: number | null;
+  sizes: string[] | null;
   categories?: {
     name: string;
   };
@@ -57,6 +59,9 @@ const Products = () => {
           stock_quantity,
           min_stock_level,
           category_id,
+          color,
+          size_count,
+          sizes,
           categories (
             name
           )
@@ -174,6 +179,8 @@ const Products = () => {
                         <TableHead>Ürün Adı</TableHead>
                         <TableHead>Model</TableHead>
                         <TableHead>Kategori</TableHead>
+                        <TableHead>Renk</TableHead>
+                        <TableHead>Beden Sayısı</TableHead>
                         <TableHead>Sipariş Adedi</TableHead>
                         <TableHead>Üretim Adedi</TableHead>
                         <TableHead>İşlemler</TableHead>
@@ -185,6 +192,8 @@ const Products = () => {
                           <TableCell className="font-medium">{product.name}</TableCell>
                           <TableCell>{product.model || '-'}</TableCell>
                           <TableCell>{product.categories?.name || '-'}</TableCell>
+                          <TableCell>{product.color || '-'}</TableCell>
+                          <TableCell>{product.size_count || '-'}</TableCell>
                           <TableCell>{product.stock_quantity || 0}</TableCell>
                           <TableCell>{product.min_stock_level || 0}</TableCell>
                           <TableCell>
