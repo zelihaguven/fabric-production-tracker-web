@@ -12,6 +12,8 @@ const StatsCards = () => {
     stockAlerts: 0,
     completedOrders: 0
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -21,26 +23,45 @@ const StatsCards = () => {
 
   const fetchStats = async () => {
     try {
+      setLoading(true);
+      setError(null);
+      console.log('Fetching stats for user:', user?.id);
+
       // Toplam sipariş sayısı
-      const { count: ordersCount } = await supabase
+      const { count: ordersCount, error: ordersError } = await supabase
         .from('orders')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user?.id);
 
+      if (ordersError) {
+        console.error('Orders count error:', ordersError);
+        throw ordersError;
+      }
+
       // Aktif üretim (devam eden siparişler)
-      const { count: activeCount } = await supabase
+      const { count: activeCount, error: activeError } = await supabase
         .from('orders')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user?.id)
         .neq('status', 'completed');
 
+      if (activeError) {
+        console.error('Active orders error:', activeError);
+        throw activeError;
+      }
+
       // Stok uyarıları (minimum stok seviyesinin altındaki ürünler)
-      const { data: lowStockProducts } = await supabase
+      const { data: lowStockProducts, error: stockError } = await supabase
         .from('products')
         .select('stock_quantity, min_stock_level')
         .eq('user_id', user?.id)
         .not('stock_quantity', 'is', null)
         .not('min_stock_level', 'is', null);
+
+      if (stockError) {
+        console.error('Stock check error:', stockError);
+        throw stockError;
+      }
 
       const stockAlerts = lowStockProducts?.filter(product => 
         product.stock_quantity && product.min_stock_level && 
@@ -48,11 +69,16 @@ const StatsCards = () => {
       ).length || 0;
 
       // Tamamlanan siparişler
-      const { count: completedCount } = await supabase
+      const { count: completedCount, error: completedError } = await supabase
         .from('orders')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user?.id)
         .eq('status', 'completed');
+
+      if (completedError) {
+        console.error('Completed orders error:', completedError);
+        throw completedError;
+      }
 
       setStats({
         totalOrders: ordersCount || 0,
@@ -60,8 +86,19 @@ const StatsCards = () => {
         stockAlerts: stockAlerts,
         completedOrders: completedCount || 0
       });
+
+      console.log('Stats updated successfully:', {
+        totalOrders: ordersCount || 0,
+        activeProduction: activeCount || 0,
+        stockAlerts: stockAlerts,
+        completedOrders: completedCount || 0
+      });
+
     } catch (error) {
       console.error('Error fetching stats:', error);
+      setError('İstatistikler yüklenirken hata oluştu');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -99,6 +136,39 @@ const StatsCards = () => {
       gradient: 'from-purple-500 to-pink-500'
     }
   ];
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 animate-pulse">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
+            </div>
+            <div className="h-8 bg-gray-200 rounded mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="grid grid-cols-1 mb-8">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+          <AlertTriangle className="w-8 h-8 text-red-500 mx-auto mb-2" />
+          <p className="text-red-700">{error}</p>
+          <button 
+            onClick={fetchStats}
+            className="mt-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Tekrar Dene
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

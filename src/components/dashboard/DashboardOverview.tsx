@@ -8,20 +8,45 @@ const DashboardOverview = () => {
   const { user } = useAuth();
   const [fabricStatuses, setFabricStatuses] = useState<any[]>([]);
   const [criticalStocks, setCriticalStocks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
-      fetchProductionData();
-      fetchCriticalStocks();
+      fetchData();
     }
   }, [user]);
 
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      console.log('Fetching dashboard data for user:', user?.id);
+
+      await Promise.all([
+        fetchProductionData(),
+        fetchCriticalStocks()
+      ]);
+
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      setError('Veriler yüklenirken hata oluştu');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchProductionData = async () => {
     try {
-      const { data: products } = await supabase
+      const { data: products, error } = await supabase
         .from('products')
         .select('fabric_status')
         .eq('user_id', user?.id);
+
+      if (error) {
+        console.error('Production data error:', error);
+        throw error;
+      }
 
       const statusCounts = {
         'kumaş sipariş edildi': 0,
@@ -44,19 +69,26 @@ const DashboardOverview = () => {
       ];
 
       setFabricStatuses(statusArray);
+      console.log('Production data updated:', statusArray);
     } catch (error) {
       console.error('Error fetching production data:', error);
+      throw error;
     }
   };
 
   const fetchCriticalStocks = async () => {
     try {
-      const { data: products } = await supabase
+      const { data: products, error } = await supabase
         .from('products')
         .select('name, model, stock_quantity, min_stock_level')
         .eq('user_id', user?.id)
         .not('stock_quantity', 'is', null)
         .not('min_stock_level', 'is', null);
+
+      if (error) {
+        console.error('Critical stocks error:', error);
+        throw error;
+      }
 
       const critical = products?.filter(product => 
         product.stock_quantity !== null && 
@@ -71,8 +103,10 @@ const DashboardOverview = () => {
       })) || [];
 
       setCriticalStocks(critical);
+      console.log('Critical stocks updated:', critical);
     } catch (error) {
       console.error('Error fetching critical stocks:', error);
+      throw error;
     }
   };
 
@@ -101,6 +135,40 @@ const DashboardOverview = () => {
         return 'bg-gray-500';
     }
   };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+        <h3 className="text-xl font-bold text-gray-900 mb-6">Üretim Durumu & Kritik Stoklar</h3>
+        <div className="animate-pulse space-y-4">
+          <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+          <div className="space-y-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-16 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
+        <h3 className="text-xl font-bold text-gray-900 mb-6">Üretim Durumu & Kritik Stoklar</h3>
+        <div className="text-center py-8">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-2" />
+          <p className="text-red-700 mb-4">{error}</p>
+          <button 
+            onClick={fetchData}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Tekrar Dene
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
