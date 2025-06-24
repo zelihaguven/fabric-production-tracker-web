@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, Package, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -50,23 +49,53 @@ const StatsCards = () => {
         throw activeError;
       }
 
-      // Stok uyarıları (minimum stok seviyesinin altındaki ürünler)
-      const { data: lowStockProducts, error: stockError } = await supabase
+      // Stok uyarıları - düzeltilmiş hesaplama
+      const { data: allProducts, error: stockError } = await supabase
         .from('products')
-        .select('stock_quantity, min_stock_level')
-        .eq('user_id', user?.id)
-        .not('stock_quantity', 'is', null)
-        .not('min_stock_level', 'is', null);
+        .select('name, stock_quantity, min_stock_level')
+        .eq('user_id', user?.id);
 
       if (stockError) {
         console.error('Stock check error:', stockError);
         throw stockError;
       }
 
-      const stockAlerts = lowStockProducts?.filter(product => 
-        product.stock_quantity && product.min_stock_level && 
-        product.stock_quantity <= product.min_stock_level
-      ).length || 0;
+      console.log('All products for stock check:', allProducts);
+
+      // Stok uyarısı hesaplama mantığını düzelt
+      let stockAlerts = 0;
+      if (allProducts) {
+        stockAlerts = allProducts.filter(product => {
+          // Eğer minimum stok seviyesi belirtilmişse
+          if (product.min_stock_level !== null && product.min_stock_level > 0) {
+            const currentStock = product.stock_quantity || 0;
+            const minLevel = product.min_stock_level;
+            const isLowStock = currentStock <= minLevel;
+            
+            if (isLowStock) {
+              console.log(`Low stock alert for ${product.name}: ${currentStock} <= ${minLevel}`);
+            }
+            
+            return isLowStock;
+          }
+          
+          // Eğer minimum stok seviyesi belirtilmemişse, stok 0 ise uyar
+          if (product.min_stock_level === null || product.min_stock_level === 0) {
+            const currentStock = product.stock_quantity || 0;
+            const isOutOfStock = currentStock === 0;
+            
+            if (isOutOfStock) {
+              console.log(`Out of stock alert for ${product.name}: ${currentStock}`);
+            }
+            
+            return isOutOfStock;
+          }
+          
+          return false;
+        }).length;
+      }
+
+      console.log('Total stock alerts calculated:', stockAlerts);
 
       // Tamamlanan siparişler
       const { count: completedCount, error: completedError } = await supabase
@@ -80,19 +109,16 @@ const StatsCards = () => {
         throw completedError;
       }
 
-      setStats({
+      const newStats = {
         totalOrders: ordersCount || 0,
         activeProduction: activeCount || 0,
         stockAlerts: stockAlerts,
         completedOrders: completedCount || 0
-      });
+      };
 
-      console.log('Stats updated successfully:', {
-        totalOrders: ordersCount || 0,
-        activeProduction: activeCount || 0,
-        stockAlerts: stockAlerts,
-        completedOrders: completedCount || 0
-      });
+      setStats(newStats);
+
+      console.log('Stats updated successfully:', newStats);
 
     } catch (error) {
       console.error('Error fetching stats:', error);

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Clock, AlertCircle, CheckCircle2, Package2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -81,26 +80,38 @@ const DashboardOverview = () => {
       const { data: products, error } = await supabase
         .from('products')
         .select('name, model, stock_quantity, min_stock_level')
-        .eq('user_id', user?.id)
-        .not('stock_quantity', 'is', null)
-        .not('min_stock_level', 'is', null);
+        .eq('user_id', user?.id);
 
       if (error) {
         console.error('Critical stocks error:', error);
         throw error;
       }
 
-      const critical = products?.filter(product => 
-        product.stock_quantity !== null && 
-        product.min_stock_level !== null && 
-        product.stock_quantity <= product.min_stock_level
-      ).slice(0, 5).map(product => ({
-        item: `${product.name} ${product.model ? `- ${product.model}` : ''}`,
-        level: product.stock_quantity || 0,
-        minimum: product.min_stock_level || 0,
-        status: product.stock_quantity === 0 ? 'critical' : 
-                product.stock_quantity <= (product.min_stock_level || 0) * 0.5 ? 'critical' : 'warning'
-      })) || [];
+      console.log('All products for critical stock check:', products);
+
+      const critical = products?.filter(product => {
+        const currentStock = product.stock_quantity || 0;
+        const minLevel = product.min_stock_level;
+        
+        // Eğer minimum stok seviyesi belirtilmişse
+        if (minLevel !== null && minLevel > 0) {
+          return currentStock <= minLevel;
+        }
+        
+        // Eğer minimum stok seviyesi belirtilmemişse, stok 0 ise kritik sayalım
+        return currentStock === 0;
+      }).slice(0, 5).map(product => {
+        const currentStock = product.stock_quantity || 0;
+        const minLevel = product.min_stock_level || 0;
+        
+        return {
+          item: `${product.name}${product.model ? ` - ${product.model}` : ''}`,
+          level: currentStock,
+          minimum: minLevel,
+          status: currentStock === 0 ? 'critical' : 
+                  currentStock <= minLevel * 0.5 ? 'critical' : 'warning'
+        };
+      }) || [];
 
       setCriticalStocks(critical);
       console.log('Critical stocks updated:', critical);
@@ -199,7 +210,7 @@ const DashboardOverview = () => {
           </h4>
           <div className="space-y-3">
             {criticalStocks.map((stock, index) => {
-              const progressPercentage = (stock.level / stock.minimum) * 100;
+              const progressPercentage = stock.minimum > 0 ? (stock.level / stock.minimum) * 100 : 0;
 
               return (
                 <div key={index} className="p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
@@ -209,7 +220,7 @@ const DashboardOverview = () => {
                       <span className="text-sm font-medium text-gray-700">{stock.item}</span>
                     </div>
                     <span className="text-xs text-gray-500">
-                      {stock.level}/{stock.minimum} adet
+                      {stock.level}/{stock.minimum || 'Min. belirsiz'} adet
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
