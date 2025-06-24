@@ -1,225 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { TrendingUp, Package, AlertTriangle, CheckCircle } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+
+import React from 'react';
+import { useStatsData } from '@/hooks/useStatsData';
+import { statsConfig } from '@/config/statsConfig';
+import StatCard from './StatCard';
+import StatsLoading from './StatsLoading';
+import StatsError from './StatsError';
 
 const StatsCards = () => {
-  const { user } = useAuth();
-  const [stats, setStats] = useState({
-    totalOrders: 0,
-    activeProduction: 0,
-    stockAlerts: 0,
-    completedOrders: 0
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (user) {
-      fetchStats();
-    }
-  }, [user]);
-
-  const fetchStats = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      console.log('Fetching stats for user:', user?.id);
-
-      // Toplam sipariş sayısı
-      const { count: ordersCount, error: ordersError } = await supabase
-        .from('orders')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user?.id);
-
-      if (ordersError) {
-        console.error('Orders count error:', ordersError);
-        throw ordersError;
-      }
-
-      // Aktif üretim (devam eden siparişler)
-      const { count: activeCount, error: activeError } = await supabase
-        .from('orders')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user?.id)
-        .neq('status', 'completed');
-
-      if (activeError) {
-        console.error('Active orders error:', activeError);
-        throw activeError;
-      }
-
-      // Stok uyarıları - düzeltilmiş hesaplama
-      const { data: allProducts, error: stockError } = await supabase
-        .from('products')
-        .select('name, stock_quantity, min_stock_level')
-        .eq('user_id', user?.id);
-
-      if (stockError) {
-        console.error('Stock check error:', stockError);
-        throw stockError;
-      }
-
-      console.log('All products for stock check:', allProducts);
-
-      // Stok uyarısı hesaplama mantığını düzelt
-      let stockAlerts = 0;
-      if (allProducts) {
-        stockAlerts = allProducts.filter(product => {
-          // Eğer minimum stok seviyesi belirtilmişse
-          if (product.min_stock_level !== null && product.min_stock_level > 0) {
-            const currentStock = product.stock_quantity || 0;
-            const minLevel = product.min_stock_level;
-            const isLowStock = currentStock <= minLevel;
-            
-            if (isLowStock) {
-              console.log(`Low stock alert for ${product.name}: ${currentStock} <= ${minLevel}`);
-            }
-            
-            return isLowStock;
-          }
-          
-          // Eğer minimum stok seviyesi belirtilmemişse, stok 0 ise uyar
-          if (product.min_stock_level === null || product.min_stock_level === 0) {
-            const currentStock = product.stock_quantity || 0;
-            const isOutOfStock = currentStock === 0;
-            
-            if (isOutOfStock) {
-              console.log(`Out of stock alert for ${product.name}: ${currentStock}`);
-            }
-            
-            return isOutOfStock;
-          }
-          
-          return false;
-        }).length;
-      }
-
-      console.log('Total stock alerts calculated:', stockAlerts);
-
-      // Tamamlanan siparişler
-      const { count: completedCount, error: completedError } = await supabase
-        .from('orders')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user?.id)
-        .eq('status', 'completed');
-
-      if (completedError) {
-        console.error('Completed orders error:', completedError);
-        throw completedError;
-      }
-
-      const newStats = {
-        totalOrders: ordersCount || 0,
-        activeProduction: activeCount || 0,
-        stockAlerts: stockAlerts,
-        completedOrders: completedCount || 0
-      };
-
-      setStats(newStats);
-
-      console.log('Stats updated successfully:', newStats);
-
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-      setError('İstatistikler yüklenirken hata oluştu');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const statsConfig = [
-    {
-      title: 'Toplam Sipariş',
-      value: stats.totalOrders.toString(),
-      change: '',
-      changeType: 'neutral',
-      icon: CheckCircle,
-      gradient: 'from-blue-500 to-cyan-500'
-    },
-    {
-      title: 'Aktif Üretim',
-      value: stats.activeProduction.toString(),
-      change: '',
-      changeType: 'neutral',
-      icon: TrendingUp,
-      gradient: 'from-green-500 to-emerald-500'
-    },
-    {
-      title: 'Stok Uyarıları',
-      value: stats.stockAlerts.toString(),
-      change: '',
-      changeType: 'warning',
-      icon: AlertTriangle,
-      gradient: 'from-orange-500 to-red-500'
-    },
-    {
-      title: 'Tamamlanan',
-      value: stats.completedOrders.toString(),
-      change: '',
-      changeType: 'neutral',
-      icon: Package,
-      gradient: 'from-purple-500 to-pink-500'
-    }
-  ];
+  const { stats, loading, error, refetch } = useStatsData();
 
   if (loading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 animate-pulse">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
-            </div>
-            <div className="h-8 bg-gray-200 rounded mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-          </div>
-        ))}
-      </div>
-    );
+    return <StatsLoading />;
   }
 
   if (error) {
-    return (
-      <div className="grid grid-cols-1 mb-8">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-          <AlertTriangle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-          <p className="text-red-700">{error}</p>
-          <button 
-            onClick={fetchStats}
-            className="mt-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-          >
-            Tekrar Dene
-          </button>
-        </div>
-      </div>
-    );
+    return <StatsError error={error} onRetry={refetch} />;
   }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      {statsConfig.map((stat, index) => {
-        const Icon = stat.icon;
-        return (
-          <div
-            key={index}
-            className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className={`w-12 h-12 bg-gradient-to-r ${stat.gradient} rounded-lg flex items-center justify-center`}>
-                <Icon className="w-6 h-6 text-white" />
-              </div>
-              {stat.changeType === 'warning' && stat.value !== '0' && (
-                <span className="text-sm font-semibold px-2 py-1 rounded-full text-orange-700 bg-orange-100">
-                  Dikkat!
-                </span>
-              )}
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</h3>
-            <p className="text-gray-600 text-sm">{stat.title}</p>
-          </div>
-        );
-      })}
+      {statsConfig.map((config, index) => (
+        <StatCard key={index} config={config} stats={stats} />
+      ))}
     </div>
   );
 };
