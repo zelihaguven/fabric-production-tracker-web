@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,14 +31,27 @@ interface ProductionRecord {
   };
 }
 
+interface ProductSummary {
+  product_id: string;
+  product_name: string;
+  product_model: string | null;
+  total_produced: number;
+  total_defective: number;
+  record_count: number;
+  records: ProductionRecord[];
+}
+
 const Production = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [productions, setProductions] = useState<ProductionRecord[]>([]);
+  const [productSummaries, setProductSummaries] = useState<ProductSummary[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingProduction, setEditingProduction] = useState<ProductionRecord | null>(null);
+  const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<'summary' | 'detailed'>('summary');
 
   useEffect(() => {
     if (user) {
@@ -67,6 +80,7 @@ const Production = () => {
 
       if (error) throw error;
       setProductions(data || []);
+      processProductSummaries(data || []);
     } catch (error) {
       console.error('Error fetching productions:', error);
       toast({
@@ -77,6 +91,38 @@ const Production = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const processProductSummaries = (productions: ProductionRecord[]) => {
+    const summaryMap = new Map<string, ProductSummary>();
+
+    productions.forEach(record => {
+      const key = record.product_id;
+      if (!summaryMap.has(key)) {
+        summaryMap.set(key, {
+          product_id: record.product_id,
+          product_name: record.products?.name || 'Ürün bulunamadı',
+          product_model: record.products?.model || null,
+          total_produced: 0,
+          total_defective: 0,
+          record_count: 0,
+          records: []
+        });
+      }
+
+      const summary = summaryMap.get(key)!;
+      summary.total_produced += record.quantity_produced;
+      summary.total_defective += record.defective_quantity || 0;
+      summary.record_count += 1;
+      summary.records.push(record);
+    });
+
+    // Sort records within each summary by date (newest first)
+    summaryMap.forEach(summary => {
+      summary.records.sort((a, b) => new Date(b.production_date).getTime() - new Date(a.production_date).getTime());
+    });
+
+    setProductSummaries(Array.from(summaryMap.values()));
   };
 
   const handleDelete = async (id: string) => {
@@ -95,6 +141,8 @@ const Production = () => {
         title: "Başarılı",
         description: "Üretim kaydı başarıyla silindi.",
       });
+      // Refresh data to update summaries
+      fetchProductions();
     } catch (error) {
       console.error('Error deleting production:', error);
       toast({
@@ -111,9 +159,24 @@ const Production = () => {
     fetchProductions();
   };
 
+  const toggleProductExpansion = (productId: string) => {
+    const newExpanded = new Set(expandedProducts);
+    if (newExpanded.has(productId)) {
+      newExpanded.delete(productId);
+    } else {
+      newExpanded.add(productId);
+    }
+    setExpandedProducts(newExpanded);
+  };
+
   const filteredProductions = productions.filter(production =>
     production.products?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     production.products?.model?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredSummaries = productSummaries.filter(summary =>
+    summary.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    summary.product_model?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getProductDisplayName = (product: { name: string; model: string | null }) => {
@@ -156,71 +219,206 @@ const Production = () => {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>Üretim Kayıtları</span>
-                  <div className="flex items-center space-x-2">
-                    <Search className="w-4 h-4 text-gray-400" />
-                    <Input
-                      placeholder="Ürün ara..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-64"
-                    />
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant={viewMode === 'summary' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setViewMode('summary')}
+                      >
+                        Özet Görünüm
+                      </Button>
+                      <Button
+                        variant={viewMode === 'detailed' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setViewMode('detailed')}
+                      >
+                        Detaylı Görünüm
+                      </Button>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Search className="w-4 h-4 text-gray-400" />
+                      <Input
+                        placeholder="Ürün ara..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-64"
+                      />
+                    </div>
                   </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {filteredProductions.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">Henüz üretim kaydı eklenmemiş.</p>
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Ürün</TableHead>
-                        <TableHead>Üretilen Miktar</TableHead>
-                        <TableHead>Hatalı Miktar</TableHead>
-                        <TableHead>Üretim Tarihi</TableHead>
-                        <TableHead>Notlar</TableHead>
-                        <TableHead>İşlemler</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredProductions.map((production) => (
-                        <TableRow key={production.id}>
-                          <TableCell className="font-medium">
-                            {production.products ? getProductDisplayName(production.products) : 'Ürün bulunamadı'}
-                          </TableCell>
-                          <TableCell>{production.quantity_produced}</TableCell>
-                          <TableCell>{production.defective_quantity || 0}</TableCell>
-                          <TableCell>
-                            {new Date(production.production_date).toLocaleDateString('tr-TR')}
-                          </TableCell>
-                          <TableCell>{production.notes || '-'}</TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setEditingProduction(production);
-                                  setShowForm(true);
-                                }}
-                              >
-                                <Edit className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleDelete(production.id)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
+                {viewMode === 'summary' ? (
+                  // Summary view
+                  filteredSummaries.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">Henüz üretim kaydı eklenmemiş.</p>
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead></TableHead>
+                          <TableHead>Ürün</TableHead>
+                          <TableHead>Toplam Üretilen</TableHead>
+                          <TableHead>Toplam Hatalı</TableHead>
+                          <TableHead>Kayıt Sayısı</TableHead>
+                          <TableHead>İşlemler</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredSummaries.map((summary) => (
+                          <React.Fragment key={summary.product_id}>
+                            <TableRow className="cursor-pointer hover:bg-gray-50">
+                              <TableCell>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => toggleProductExpansion(summary.product_id)}
+                                >
+                                  {expandedProducts.has(summary.product_id) ? (
+                                    <ChevronDown className="w-4 h-4" />
+                                  ) : (
+                                    <ChevronRight className="w-4 h-4" />
+                                  )}
+                                </Button>
+                              </TableCell>
+                              <TableCell className="font-medium">
+                                {getProductDisplayName({ name: summary.product_name, model: summary.product_model })}
+                              </TableCell>
+                              <TableCell className="text-green-600 font-semibold">
+                                {summary.total_produced}
+                              </TableCell>
+                              <TableCell className="text-red-600">
+                                {summary.total_defective}
+                              </TableCell>
+                              <TableCell>{summary.record_count}</TableCell>
+                              <TableCell>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    // Create a new production record for this product
+                                    setEditingProduction(null);
+                                    setShowForm(true);
+                                  }}
+                                >
+                                  <Plus className="w-4 h-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                            {expandedProducts.has(summary.product_id) && (
+                              <TableRow>
+                                <TableCell colSpan={6} className="bg-gray-50 p-0">
+                                  <div className="p-4">
+                                    <h4 className="font-semibold mb-2 text-gray-700">Geçmiş Üretim Kayıtları:</h4>
+                                    <div className="space-y-2">
+                                      {summary.records.map((record) => (
+                                        <div key={record.id} className="flex items-center justify-between bg-white p-3 rounded border">
+                                          <div className="flex items-center space-x-4">
+                                            <span className="text-sm text-gray-600">
+                                              {new Date(record.production_date).toLocaleDateString('tr-TR')}
+                                            </span>
+                                            <span className="text-sm">
+                                              Üretilen: <span className="font-semibold text-green-600">{record.quantity_produced}</span>
+                                            </span>
+                                            <span className="text-sm">
+                                              Hatalı: <span className="font-semibold text-red-600">{record.defective_quantity || 0}</span>
+                                            </span>
+                                            {record.notes && (
+                                              <span className="text-sm text-gray-500">
+                                                Not: {record.notes}
+                                              </span>
+                                            )}
+                                          </div>
+                                          <div className="flex space-x-2">
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              onClick={() => {
+                                                setEditingProduction(record);
+                                                setShowForm(true);
+                                              }}
+                                            >
+                                              <Edit className="w-4 h-4" />
+                                            </Button>
+                                            <Button
+                                              size="sm"
+                                              variant="outline"
+                                              onClick={() => handleDelete(record.id)}
+                                            >
+                                              <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </React.Fragment>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )
+                ) : (
+                  // Detailed view (original)
+                  filteredProductions.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">Henüz üretim kaydı eklenmemiş.</p>
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Ürün</TableHead>
+                          <TableHead>Üretilen Miktar</TableHead>
+                          <TableHead>Hatalı Miktar</TableHead>
+                          <TableHead>Üretim Tarihi</TableHead>
+                          <TableHead>Notlar</TableHead>
+                          <TableHead>İşlemler</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredProductions.map((production) => (
+                          <TableRow key={production.id}>
+                            <TableCell className="font-medium">
+                              {production.products ? getProductDisplayName(production.products) : 'Ürün bulunamadı'}
+                            </TableCell>
+                            <TableCell>{production.quantity_produced}</TableCell>
+                            <TableCell>{production.defective_quantity || 0}</TableCell>
+                            <TableCell>
+                              {new Date(production.production_date).toLocaleDateString('tr-TR')}
+                            </TableCell>
+                            <TableCell>{production.notes || '-'}</TableCell>
+                            <TableCell>
+                              <div className="flex space-x-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setEditingProduction(production);
+                                    setShowForm(true);
+                                  }}
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDelete(production.id)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )
                 )}
               </CardContent>
             </Card>
