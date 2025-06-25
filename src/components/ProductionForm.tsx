@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -96,6 +95,8 @@ const ProductionForm = ({ production, onSuccess, onCancel }: ProductionFormProps
         defective_quantity: formData.defective_quantity ? parseInt(formData.defective_quantity) : null,
         production_date: formData.production_date,
         notes: formData.notes || null,
+        updated_by: user.id,
+        ...(production ? {} : { created_by: user.id }), // Only set created_by for new production records
       };
 
       if (production) {

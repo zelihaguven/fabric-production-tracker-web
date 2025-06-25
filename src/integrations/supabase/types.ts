@@ -42,6 +42,7 @@ export type Database = {
           brand: string | null
           count_quantity: number | null
           created_at: string
+          created_by: string | null
           delivery_date: string | null
           id: string
           model_owner: string | null
@@ -50,6 +51,7 @@ export type Database = {
           product_id: string
           received_quantity: number | null
           updated_at: string
+          updated_by: string | null
           user_id: string
         }
         Insert: {
@@ -57,6 +59,7 @@ export type Database = {
           brand?: string | null
           count_quantity?: number | null
           created_at?: string
+          created_by?: string | null
           delivery_date?: string | null
           id?: string
           model_owner?: string | null
@@ -65,6 +68,7 @@ export type Database = {
           product_id: string
           received_quantity?: number | null
           updated_at?: string
+          updated_by?: string | null
           user_id: string
         }
         Update: {
@@ -72,6 +76,7 @@ export type Database = {
           brand?: string | null
           count_quantity?: number | null
           created_at?: string
+          created_by?: string | null
           delivery_date?: string | null
           id?: string
           model_owner?: string | null
@@ -80,6 +85,7 @@ export type Database = {
           product_id?: string
           received_quantity?: number | null
           updated_at?: string
+          updated_by?: string | null
           user_id?: string
         }
         Relationships: [
@@ -143,6 +149,7 @@ export type Database = {
       orders: {
         Row: {
           created_at: string
+          created_by: string | null
           customer_email: string | null
           customer_name: string
           customer_phone: string | null
@@ -155,10 +162,12 @@ export type Database = {
           total_amount: number | null
           total_delivery_quantity: number | null
           updated_at: string
+          updated_by: string | null
           user_id: string
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           customer_email?: string | null
           customer_name: string
           customer_phone?: string | null
@@ -171,10 +180,12 @@ export type Database = {
           total_amount?: number | null
           total_delivery_quantity?: number | null
           updated_at?: string
+          updated_by?: string | null
           user_id: string
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           customer_email?: string | null
           customer_name?: string
           customer_phone?: string | null
@@ -187,6 +198,7 @@ export type Database = {
           total_amount?: number | null
           total_delivery_quantity?: number | null
           updated_at?: string
+          updated_by?: string | null
           user_id?: string
         }
         Relationships: []
@@ -194,32 +206,38 @@ export type Database = {
       production_records: {
         Row: {
           created_at: string
+          created_by: string | null
           defective_quantity: number | null
           id: string
           notes: string | null
           product_id: string
           production_date: string
           quantity_produced: number
+          updated_by: string | null
           user_id: string
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           defective_quantity?: number | null
           id?: string
           notes?: string | null
           product_id: string
           production_date?: string
           quantity_produced: number
+          updated_by?: string | null
           user_id: string
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           defective_quantity?: number | null
           id?: string
           notes?: string | null
           product_id?: string
           production_date?: string
           quantity_produced?: number
+          updated_by?: string | null
           user_id?: string
         }
         Relationships: [
@@ -237,6 +255,7 @@ export type Database = {
           color: string | null
           cost: number | null
           created_at: string
+          created_by: string | null
           description: string | null
           fabric_number: string | null
           fabric_status: string | null
@@ -250,12 +269,14 @@ export type Database = {
           sku: string | null
           stock_quantity: number | null
           updated_at: string
+          updated_by: string | null
           user_id: string
         }
         Insert: {
           color?: string | null
           cost?: number | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           fabric_number?: string | null
           fabric_status?: string | null
@@ -269,12 +290,14 @@ export type Database = {
           sku?: string | null
           stock_quantity?: number | null
           updated_at?: string
+          updated_by?: string | null
           user_id: string
         }
         Update: {
           color?: string | null
           cost?: number | null
           created_at?: string
+          created_by?: string | null
           description?: string | null
           fabric_number?: string | null
           fabric_status?: string | null
@@ -288,6 +311,7 @@ export type Database = {
           sku?: string | null
           stock_quantity?: number | null
           updated_at?: string
+          updated_by?: string | null
           user_id?: string
         }
         Relationships: []

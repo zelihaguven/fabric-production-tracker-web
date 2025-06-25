@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -107,6 +106,8 @@ const LabelForm = ({ label, onSuccess, onCancel }: LabelFormProps) => {
         model_owner: formData.model_owner || null,
         order_date: formData.order_date || null,
         delivery_date: formData.delivery_date || null,
+        updated_by: user.id,
+        ...(label ? {} : { created_by: user.id }), // Only set created_by for new labels
       };
 
       if (label) {

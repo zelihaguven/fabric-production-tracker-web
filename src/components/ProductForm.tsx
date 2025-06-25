@@ -84,6 +84,8 @@ const ProductForm = ({ product, onSuccess, onCancel }: ProductFormProps) => {
         ordering_brand: formData.ordering_brand || null,
         fabric_number: formData.fabric_number || null,
         fabric_status: formData.fabric_status || null,
+        updated_by: user.id,
+        ...(product ? {} : { created_by: user.id }), // Only set created_by for new products
       };
 
       if (product) {

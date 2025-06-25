@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -89,6 +88,8 @@ const OrderForm = ({ order, onSuccess, onCancel }: OrderFormProps) => {
         order_date: formData.order_date,
         delivery_date: formData.delivery_date || null,
         notes: formData.notes || null,
+        updated_by: user.id,
+        ...(order ? {} : { created_by: user.id }), // Only set created_by for new orders
       };
 
       if (order) {
