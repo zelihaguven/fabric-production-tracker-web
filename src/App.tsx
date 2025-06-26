@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import CompanyWrapper from "@/components/CompanyWrapper";
 import Index from "./pages/Index";
 import Products from "./pages/Products";
 import Orders from "./pages/Orders";
@@ -31,47 +32,65 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/" element={
               <ProtectedRoute>
-                <Index />
+                <CompanyWrapper>
+                  <Index />
+                </CompanyWrapper>
               </ProtectedRoute>
             } />
             <Route path="/products" element={
               <ProtectedRoute>
-                <Products />
+                <CompanyWrapper>
+                  <Products />
+                </CompanyWrapper>
               </ProtectedRoute>
             } />
             <Route path="/orders" element={
               <ProtectedRoute>
-                <Orders />
+                <CompanyWrapper>
+                  <Orders />
+                </CompanyWrapper>
               </ProtectedRoute>
             } />
             <Route path="/production" element={
               <ProtectedRoute>
-                <Production />
+                <CompanyWrapper>
+                  <Production />
+                </CompanyWrapper>
               </ProtectedRoute>
             } />
             <Route path="/inventory" element={
               <ProtectedRoute>
-                <Inventory />
+                <CompanyWrapper>
+                  <Inventory />
+                </CompanyWrapper>
               </ProtectedRoute>
             } />
             <Route path="/labels" element={
               <ProtectedRoute>
-                <Labels />
+                <CompanyWrapper>
+                  <Labels />
+                </CompanyWrapper>
               </ProtectedRoute>
             } />
             <Route path="/reports" element={
               <ProtectedRoute>
-                <Reports />
+                <CompanyWrapper>
+                  <Reports />
+                </CompanyWrapper>
               </ProtectedRoute>
             } />
             <Route path="/analytics" element={
               <ProtectedRoute>
-                <Analytics />
+                <CompanyWrapper>
+                  <Analytics />
+                </CompanyWrapper>
               </ProtectedRoute>
             } />
             <Route path="/settings" element={
               <ProtectedRoute>
-                <Settings />
+                <CompanyWrapper>
+                  <Settings />
+                </CompanyWrapper>
               </ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />

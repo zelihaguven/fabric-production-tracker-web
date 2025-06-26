@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useCompany } from '@/hooks/useCompany';
 import { 
   Home, 
   Package, 
@@ -13,13 +14,18 @@ import {
   Tag,
   TrendingUp,
   LogOut,
-  User
+  User,
+  Building2,
+  Copy
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const Sidebar = () => {
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const { company } = useCompany();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('dashboard');
 
   useEffect(() => {
@@ -56,6 +62,16 @@ const Sidebar = () => {
     }
   };
 
+  const copyCompanyCode = () => {
+    if (company?.company_code) {
+      navigator.clipboard.writeText(company.company_code);
+      toast({
+        title: "Kopyalandı!",
+        description: "Şirket kodu panoya kopyalandı.",
+      });
+    }
+  };
+
   return (
     <div className="fixed left-0 top-0 h-full w-64 bg-white shadow-xl border-r border-gray-200 z-50">
       <div className="p-6 border-b border-gray-200">
@@ -69,6 +85,33 @@ const Sidebar = () => {
           </div>
         </div>
       </div>
+      
+      {/* Şirket Bilgisi */}
+      {company && (
+        <div className="p-4 border-b border-gray-200 bg-blue-50">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+              <Building2 className="w-4 h-4 text-blue-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {company.name}
+              </p>
+              <div className="flex items-center space-x-1">
+                <p className="text-xs text-gray-600">Kod: {company.company_code}</p>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-4 w-4 p-0"
+                  onClick={copyCompanyCode}
+                >
+                  <Copy className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* Kullanıcı Bilgisi */}
       <div className="p-4 border-b border-gray-200 bg-gray-50">

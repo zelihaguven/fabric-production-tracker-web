@@ -25,6 +25,8 @@ interface ProductionRecord {
   defective_quantity: number | null;
   production_date: string;
   notes: string | null;
+  created_by: string | null;
+  updated_by: string | null;
   products: {
     name: string;
     model: string | null;
@@ -70,12 +72,13 @@ const Production = () => {
           defective_quantity,
           production_date,
           notes,
+          created_by,
+          updated_by,
           products (
             name,
             model
           )
         `)
-        .eq('user_id', user?.id)
         .order('production_date', { ascending: false });
 
       if (error) throw error;
