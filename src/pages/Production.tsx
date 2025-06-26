@@ -328,7 +328,6 @@ const Production = () => {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => {
-                                    // Create a new production record for this product
                                     setEditingProduction(null);
                                     setShowForm(true);
                                   }}

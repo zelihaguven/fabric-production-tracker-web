@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -86,17 +87,55 @@ const ProductionForm = ({ production, onSuccess, onCancel }: ProductionFormProps
     e.preventDefault();
     if (!user) return;
 
+    // Validation checks
+    if (!formData.product_id) {
+      toast({
+        title: "Hata",
+        description: "Lütfen bir ürün seçin.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.quantity_produced || parseInt(formData.quantity_produced) <= 0) {
+      toast({
+        title: "Hata",
+        description: "Lütfen geçerli bir üretilen miktar girin.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const defectiveQty = formData.defective_quantity ? parseInt(formData.defective_quantity) : null;
+    if (defectiveQty !== null && defectiveQty < 0) {
+      toast({
+        title: "Hata",
+        description: "Hatalı miktar negatif olamaz.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
+      console.log('Submitting production data:', {
+        user_id: user.id,
+        product_id: formData.product_id,
+        quantity_produced: parseInt(formData.quantity_produced),
+        defective_quantity: defectiveQty,
+        production_date: formData.production_date,
+        notes: formData.notes || null,
+      });
+
       const productionData = {
         user_id: user.id,
         product_id: formData.product_id,
         quantity_produced: parseInt(formData.quantity_produced),
-        defective_quantity: formData.defective_quantity ? parseInt(formData.defective_quantity) : null,
+        defective_quantity: defectiveQty,
         production_date: formData.production_date,
         notes: formData.notes || null,
         updated_by: user.id,
-        ...(production ? {} : { created_by: user.id }), // Only set created_by for new production records
+        ...(production ? {} : { created_by: user.id }),
       };
 
       if (production) {
@@ -127,7 +166,7 @@ const ProductionForm = ({ production, onSuccess, onCancel }: ProductionFormProps
       console.error('Error saving production:', error);
       toast({
         title: "Hata",
-        description: "Üretim kaydı kaydedilirken bir hata oluştu.",
+        description: "Üretim kaydı kaydedilirken bir hata oluştu. Lütfen tüm alanları kontrol edin.",
         variant: "destructive",
       });
     } finally {
@@ -181,6 +220,7 @@ const ProductionForm = ({ production, onSuccess, onCancel }: ProductionFormProps
                 <Input
                   id="quantity_produced"
                   type="number"
+                  min="1"
                   value={formData.quantity_produced}
                   onChange={(e) => handleChange('quantity_produced', e.target.value)}
                   required
@@ -191,6 +231,7 @@ const ProductionForm = ({ production, onSuccess, onCancel }: ProductionFormProps
                 <Input
                   id="defective_quantity"
                   type="number"
+                  min="0"
                   value={formData.defective_quantity}
                   onChange={(e) => handleChange('defective_quantity', e.target.value)}
                 />
