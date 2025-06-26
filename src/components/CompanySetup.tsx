@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,9 +6,17 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Building2, Users, Plus } from 'lucide-react';
 
+interface Company {
+  id: string;
+  name: string;
+  company_code: string;
+  created_at: string;
+  created_by: string;
+}
+
 interface CompanySetupProps {
-  onCreateCompany: (companyName: string) => Promise<void>;
-  onJoinCompany: (companyCode: string) => Promise<void>;
+  onCreateCompany: (companyName: string) => Promise<Company>;
+  onJoinCompany: (companyCode: string) => Promise<Company>;
   loading?: boolean;
 }
 
