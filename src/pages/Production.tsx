@@ -79,9 +79,11 @@ const Production = () => {
             model
           )
         `)
+        .eq('user_id', user?.id)
         .order('production_date', { ascending: false });
 
       if (error) throw error;
+      console.log('Fetched production records:', data);
       setProductions(data || []);
       processProductSummaries(data || []);
     } catch (error) {
@@ -97,6 +99,7 @@ const Production = () => {
   };
 
   const processProductSummaries = (productions: ProductionRecord[]) => {
+    console.log('Processing summaries for productions:', productions);
     const summaryMap = new Map<string, ProductSummary>();
 
     productions.forEach(record => {
@@ -123,9 +126,12 @@ const Production = () => {
     // Sort records within each summary by date (newest first)
     summaryMap.forEach(summary => {
       summary.records.sort((a, b) => new Date(b.production_date).getTime() - new Date(a.production_date).getTime());
+      console.log(`Product ${summary.product_name} has ${summary.records.length} records:`, summary.records);
     });
 
-    setProductSummaries(Array.from(summaryMap.values()));
+    const summariesArray = Array.from(summaryMap.values());
+    console.log('Final summaries:', summariesArray);
+    setProductSummaries(summariesArray);
   };
 
   const handleDelete = async (id: string) => {
@@ -184,6 +190,26 @@ const Production = () => {
 
   const getProductDisplayName = (product: { name: string; model: string | null }) => {
     return product.model ? `${product.name} - ${product.model}` : product.name;
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('tr-TR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('tr-TR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   if (loading) {
@@ -315,48 +341,52 @@ const Production = () => {
                               <TableRow>
                                 <TableCell colSpan={6} className="bg-gray-50 p-0">
                                   <div className="p-4">
-                                    <h4 className="font-semibold mb-2 text-gray-700">Geçmiş Üretim Kayıtları:</h4>
-                                    <div className="space-y-2">
-                                      {summary.records.map((record) => (
-                                        <div key={record.id} className="flex items-center justify-between bg-white p-3 rounded border">
-                                          <div className="flex items-center space-x-4">
-                                            <span className="text-sm text-gray-600">
-                                              {new Date(record.production_date).toLocaleDateString('tr-TR')}
-                                            </span>
-                                            <span className="text-sm">
-                                              Üretilen: <span className="font-semibold text-green-600">{record.quantity_produced}</span>
-                                            </span>
-                                            <span className="text-sm">
-                                              Hatalı: <span className="font-semibold text-red-600">{record.defective_quantity || 0}</span>
-                                            </span>
-                                            {record.notes && (
-                                              <span className="text-sm text-gray-500">
-                                                Not: {record.notes}
+                                    <h4 className="font-semibold mb-3 text-gray-700">Geçmiş Üretim Kayıtları:</h4>
+                                    {summary.records.length > 0 ? (
+                                      <div className="space-y-2">
+                                        {summary.records.map((record) => (
+                                          <div key={record.id} className="flex items-center justify-between bg-white p-3 rounded border shadow-sm">
+                                            <div className="flex items-center space-x-4">
+                                              <span className="text-sm text-gray-600 font-medium">
+                                                {formatDate(record.production_date)}
                                               </span>
-                                            )}
+                                              <span className="text-sm">
+                                                Üretilen: <span className="font-semibold text-green-600">{record.quantity_produced}</span>
+                                              </span>
+                                              <span className="text-sm">
+                                                Hatalı: <span className="font-semibold text-red-600">{record.defective_quantity || 0}</span>
+                                              </span>
+                                              {record.notes && (
+                                                <span className="text-sm text-gray-500">
+                                                  Not: {record.notes}
+                                                </span>
+                                              )}
+                                            </div>
+                                            <div className="flex space-x-2">
+                                              <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => {
+                                                  setEditingProduction(record);
+                                                  setShowForm(true);
+                                                }}
+                                              >
+                                                <Edit className="w-4 h-4" />
+                                              </Button>
+                                              <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() => handleDelete(record.id)}
+                                              >
+                                                <Trash2 className="w-4 h-4" />
+                                              </Button>
+                                            </div>
                                           </div>
-                                          <div className="flex space-x-2">
-                                            <Button
-                                              size="sm"
-                                              variant="outline"
-                                              onClick={() => {
-                                                setEditingProduction(record);
-                                                setShowForm(true);
-                                              }}
-                                            >
-                                              <Edit className="w-4 h-4" />
-                                            </Button>
-                                            <Button
-                                              size="sm"
-                                              variant="outline"
-                                              onClick={() => handleDelete(record.id)}
-                                            >
-                                              <Trash2 className="w-4 h-4" />
-                                            </Button>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <p className="text-gray-500 text-sm">Bu ürün için henüz üretim kaydı bulunmuyor.</p>
+                                    )}
                                   </div>
                                 </TableCell>
                               </TableRow>
@@ -393,7 +423,7 @@ const Production = () => {
                             <TableCell>{production.quantity_produced}</TableCell>
                             <TableCell>{production.defective_quantity || 0}</TableCell>
                             <TableCell>
-                              {new Date(production.production_date).toLocaleDateString('tr-TR')}
+                              {formatDate(production.production_date)}
                             </TableCell>
                             <TableCell>{production.notes || '-'}</TableCell>
                             <TableCell>
